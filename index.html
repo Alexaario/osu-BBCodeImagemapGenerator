@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue.js Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src=" https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js "></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+</head>
+
+<style>
+    body {
+        margin: 0;
+    }
+
+    #app {
+        height: 100vh;
+        width: 100vw;
+        background-color: black;
+        display: grid;
+        place-items: center;
+    }
+
+    .wrapper {
+        padding: 1rem;
+        border-radius: 10px;
+        width: 80%;
+        aspect-ratio: 16/9;
+        background-color: lightblue;
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        grid-template-rows: 1fr 8fr;
+    }
+
+    .info {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .code textarea {
+        height: 95%;
+        width: 95%;
+    }
+
+    .code {
+        display: grid;
+        place-items: center;
+    }
+
+    .toolbar {
+        display: grid;
+        grid-template-columns: 3fr 4fr;
+    }
+
+    textarea {
+        resize: none;
+    }
+
+    .settings {
+        text-align: center;
+    }
+
+    label {
+        display: inline-block;
+        width: max-content;
+    }
+
+    input {
+        width: 40%;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .preview {
+        position: relative;
+        display: inline-block;
+    }
+
+    .clickable-area {
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.3);
+        outline: 2px dashed white;
+        box-sizing: content-box;
+        height: 75px;
+        width: 125px;
+    }
+
+    .editing {
+        outline: 2px dashed red;
+    }
+
+    .drag-handle {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        cursor: move;
+        z-index: 1;
+    }
+
+    button {
+        height: min-content;
+        width: max-content;
+    }
+
+    .addBoxButton {
+        padding: 0.4rem;
+    }
+    .addBoxButton button {
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+<body>
+    <div id="app">
+        <div class="wrapper">
+            <div class="toolbar">
+                <div class="addBoxButton">
+                    <label for="imageURL">Image URL: </label>
+                    <input type="text" ref="imageURL" id="imageURL">
+                    <button @click="changeImage">Save</button> <br>
+                    <button @click="createNewBox">Add clickable box</button>
+                </div>
+                <div class="settings" v-if="selectedID">
+                    <span>Selected box</span> <br>
+                    <label for="url">URL:</label>
+                    <input type="text" class="url" id="url" v-model="selectedBox.url"></input> <br>
+                    <label for="title">Title:</label>
+                    <input type="text" class="title" id="title" v-model="selectedBox.title"></input>
+                </div>
+            </div>
+            <div class="info">
+                <div>Note: resizing might break shit and the calculations. Resize at your own risk.</div>
+                <div>BBCode output</div>
+            </div>
+            <div class="preview">
+                <div class="image-wrapper">
+                    <div v-for="box in boxes" :data-id="box.id" class="clickable-area">
+                        <div class="drag-handle"></div>
+                    </div>
+                    <img class="image" :src="imageURL" alt="Could not load image.">
+                </div>
+            </div>
+            <div class="code">
+                <textarea readonly :value="BBCode"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const vm = new Vue({
+            el: '#app',
+            data: {
+                selectedID: '',
+                BBCode: '',
+                imageURL: "https://i.ppy.sh/e05f6c8fa622b10a97feab6feab88eddc10fbaf7/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6174746163686d656e74732f3936333039303839353232383530363231322f3937383031333734373234313136383931362f66696e62736d616c6c65722e706e67",
+                boxes: [
+                    {
+                        id: 1,
+                        x: 0,
+                        y: 0,
+                        sizeX: 0,
+                        sizeY: 0,
+                        url: "https://google.com",
+                        title: ""
+                    }
+                ],
+
+            },
+            computed: {
+                selectedBox() {
+                    return _.find(vm.boxes, function (o) { return o.id == vm.selectedID })
+                }
+            },
+            watch: {
+                boxes: {
+                    deep: true,
+                    handler(newBoxes, oldBoxes) {
+                        vm.$options.methods.generateBBCode()
+
+                        $(function () {
+                            $(".clickable-area").draggable({
+                                containment: ".image",
+                                handle: ".drag-handle",
+                                scroll: false,
+                                start: function (event, ui) {
+                                    vm.selectedID = $(this)[0].dataset.id
+                                    $(".clickable-area").removeClass("editing");
+                                    $(this).addClass("editing");
+                                },
+                                drag: function (params) {
+                                    let boxID = $(this)[0].dataset.id;
+                                    let box = _.find(vm.boxes, function (o) { return o.id == boxID })
+
+                                    console.log(box.x, box.y, $(this).position().top);
+
+                                    box.x = Math.max(0, ((($(this).position().left - 16) / $(".image").width()) * 100).toFixed(2))
+                                    box.y = Math.max(0, ((($(this).position().top - 16) / $(".image").height()) * 100).toFixed(2))
+
+                                    box.sizeX = Math.max(0, (($(this).width() / $(".image").width()) * 100).toFixed(2))
+                                    box.sizeY = Math.max(0, (($(this).height() / $(".image").height()) * 100).toFixed(2))
+                                },
+                            });
+
+                            $(".clickable-area").resizable({
+                                containment: ".image",
+                                handles: "se, w, n, s, e",
+                                start: function (event, ui) {
+                                    vm.selectedID = $(this)[0].dataset.id
+                                    $(".clickable-area").removeClass("editing");
+                                    $(this).addClass("editing");
+                                },
+                                resize: function (params, ui) {
+                                    let boxID = $(this)[0].dataset.id;
+                                    let box = _.find(vm.boxes, function (o) { return o.id == boxID })
+
+                                    box.x = Math.max(0, ((($(this).position().left - 16) / $(".image").width()) * 100).toFixed(2))
+                                    box.y = Math.max(0, ((($(this).position().top - 16) / $(".image").height()) * 100).toFixed(2))
+
+                                    box.sizeX = Math.max(0, (($(this).width() / $(".image").width()) * 100).toFixed(2))
+                                    box.sizeY = Math.max(0, (($(this).height() / $(".image").height()) * 100).toFixed(2))
+                                },
+                            });
+
+                            $(".clickable-area").click(function () {
+                                vm.selectedID = $(this)[0].dataset.id
+                                $(".clickable-area").removeClass("editing");
+                                $(this).addClass("editing");
+                            });
+
+                            $(".image").click(function () {
+                                vm.selectedID = ""
+                                $(".clickable-area").removeClass("editing");
+                            });
+                        });
+                    }
+                }
+            },
+            methods: {
+                createNewBox() {
+                    vm.boxes.push(
+                        {
+                            id: vm.boxes.length + 1,
+                            x: 0,
+                            y: 0,
+                            sizeX: 0,
+                            sizeY: 0,
+                            url: "https://google.com",
+                            title: "",
+                        }
+                    )
+                },
+
+                changeImage(url) {
+                    vm.imageURL = vm.$refs.imageURL.value
+                },
+
+                generateBBCode() {
+                    let BBCode = `
+                    [imagemap]
+                    ${vm.imageURL}
+                    ${vm.boxes.map(box => `${box.x} ${box.y} ${box.sizeX} ${box.sizeY} ${box.url} ${box.title}`).join('\n')}
+                    [/imagemap]`
+
+                    vm.BBCode = BBCode.replace(/^\s+|\s+$/gm, '');
+                }
+            },
+
+            mounted() {
+                $(function () {
+                    $(".clickable-area").draggable({
+                        containment: ".image",
+                        handle: ".drag-handle",
+                        scroll: false,
+                        start: function (event, ui) {
+                            vm.selectedID = $(this)[0].dataset.id
+                            $(".clickable-area").removeClass("editing");
+                            $(this).addClass("editing");
+                        },
+                        drag: function (params) {
+                            let boxID = $(this)[0].dataset.id;
+                            let box = _.find(vm.boxes, function (o) { return o.id == boxID })
+
+                            console.log(box.x, box.y, $(this).position().top);
+
+                            box.x = Math.max(0, ((($(this).position().left - 16) / $(".image").width()) * 100).toFixed(2))
+                            box.y = Math.max(0, ((($(this).position().top - 16) / $(".image").height()) * 100).toFixed(2))
+
+                            box.sizeX = Math.max(0, (($(this).width() / $(".image").width()) * 100).toFixed(2))
+                            box.sizeY = Math.max(0, (($(this).height() / $(".image").height()) * 100).toFixed(2))
+                        },
+                    });
+
+                    $(".clickable-area").resizable({
+                        containment: ".image",
+                        handles: "se, w, n, s, e",
+                        start: function (event) {
+                            vm.selectedID = $(this)[0].dataset.id
+                            $(".clickable-area").removeClass("editing");
+                            $(this).addClass("editing");
+                        },
+                        resize: function (params) {
+                            let boxID = $(this)[0].dataset.id;
+                            let box = _.find(vm.boxes, function (o) { return o.id == boxID })
+
+                            box.x = Math.max(0, ((($(this).position().left - 16) / $(".image").width()) * 100).toFixed(2))
+                            box.y = Math.max(0, ((($(this).position().top - 16) / $(".image").height()) * 100).toFixed(2))
+
+                            box.sizeX = Math.max(0, (($(this).width() / $(".image").width()) * 100).toFixed(2))
+                            box.sizeY = Math.max(0, (($(this).height() / $(".image").height()) * 100).toFixed(2))
+                        },
+                    });
+
+                    $(".clickable-area").click(function () {
+                        vm.selectedID = $(this)[0].dataset.id
+                        $(".clickable-area").removeClass("editing");
+                        $(this).addClass("editing");
+                    });
+
+                    $(".image").click(function () {
+                        vm.selectedID = ""
+                        $(".clickable-area").removeClass("editing");
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
