@@ -202,11 +202,8 @@
 
                                     console.log(box.x, box.y, $(this).position().top);
 
-                                    box.x = Math.max(0, ((($(this).position().left - 16) / $(".image").width()) * 100).toFixed(2))
-                                    box.y = Math.max(0, ((($(this).position().top - 16) / $(".image").height()) * 100).toFixed(2))
-
-                                    box.sizeX = Math.max(0, (($(this).width() / $(".image").width()) * 100).toFixed(2))
-                                    box.sizeY = Math.max(0, (($(this).height() / $(".image").height()) * 100).toFixed(2))
+                                    box.x = Math.max(0, ((($(this).position().left) / $(".image").width()) * 100).toFixed(2))
+                                    box.y = Math.max(0, ((($(this).position().top) / $(".image").height()) * 100).toFixed(2))
                                 },
                             });
 
@@ -222,11 +219,11 @@
                                     let boxID = $(this)[0].dataset.id;
                                     let box = _.find(vm.boxes, function (o) { return o.id == boxID })
 
-                                    box.x = Math.max(0, ((($(this).position().left - 16) / $(".image").width()) * 100).toFixed(2))
-                                    box.y = Math.max(0, ((($(this).position().top - 16) / $(".image").height()) * 100).toFixed(2))
+                                    box.x = Math.max(0, ((($(this).position().left) / $(".image").width()) * 100).toFixed(2))
+                                    box.y = Math.max(0, ((($(this).position().top) / $(".image").height()) * 100).toFixed(2))
 
-                                    box.sizeX = Math.max(0, (($(this).width() / $(".image").width()) * 100).toFixed(2))
-                                    box.sizeY = Math.max(0, (($(this).height() / $(".image").height()) * 100).toFixed(2))
+                                    box.sizeX = Math.max(0, ((ui.element.width() / $(".image").width()) * 100).toFixed(2))
+                                    box.sizeY = Math.max(0, ((ui.element.height() / $(".image").height()) * 100).toFixed(2))
                                 },
                             });
 
@@ -293,9 +290,6 @@
 
                             box.x = Math.max(0, ((($(this).position().left - 16) / $(".image").width()) * 100).toFixed(2))
                             box.y = Math.max(0, ((($(this).position().top - 16) / $(".image").height()) * 100).toFixed(2))
-
-                            box.sizeX = Math.max(0, (($(this).width() / $(".image").width()) * 100).toFixed(2))
-                            box.sizeY = Math.max(0, (($(this).height() / $(".image").height()) * 100).toFixed(2))
                         },
                     });
 
@@ -307,15 +301,15 @@
                             $(".clickable-area").removeClass("editing");
                             $(this).addClass("editing");
                         },
-                        resize: function (params) {
+                        resize: function (params, ui) {
                             let boxID = $(this)[0].dataset.id;
                             let box = _.find(vm.boxes, function (o) { return o.id == boxID })
 
                             box.x = Math.max(0, ((($(this).position().left - 16) / $(".image").width()) * 100).toFixed(2))
                             box.y = Math.max(0, ((($(this).position().top - 16) / $(".image").height()) * 100).toFixed(2))
 
-                            box.sizeX = Math.max(0, (($(this).width() / $(".image").width()) * 100).toFixed(2))
-                            box.sizeY = Math.max(0, (($(this).height() / $(".image").height()) * 100).toFixed(2))
+                            box.sizeX = Math.max(0, ((ui.element.width() / $(".image").width()) * 100).toFixed(2))
+                            box.sizeY = Math.max(0, ((ui.element.height() / $(".image").height()) * 100).toFixed(2))
                         },
                     });
 
