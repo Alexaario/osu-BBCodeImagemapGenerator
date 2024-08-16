@@ -49,6 +49,7 @@
     .code {
         display: grid;
         place-items: center;
+        grid-template-rows: 14fr 1fr;
     }
 
     .toolbar {
@@ -117,6 +118,10 @@
     .addBoxButton button {
         margin-bottom: 0.5rem;
     }
+
+    .BallsIDontCare {
+        text-decoration: none;
+    }
 </style>
 
 <body>
@@ -133,7 +138,7 @@
                     <span>Selected box</span> <br>
                     <label for="url">URL:</label>
                     <input type="text" class="url" id="url" v-model="selectedBox.url"></input> <br>
-                    <label for="title">Title:</label>
+                    <label for="title">Shown text on hover:</label>
                     <input type="text" class="title" id="title" v-model="selectedBox.title"></input> <br>
                     <button @click="deleteBox">Delete</button>
                 </div>
@@ -151,6 +156,9 @@
             </div>
             <div class="code">
                 <textarea readonly :value="BBCode"></textarea>
+                <div>
+                    <a class="BallsIDontCare" href="https://osu.ppy.sh/wiki/en/BBCode#imagemap" target="_blank">Imagemap info</a>
+                </div>
             </div>
         </div>
     </div>
@@ -161,7 +169,7 @@
             data: {
                 selectedID: '',
                 BBCode: '',
-                imageURL: "https://i.ppy.sh/e05f6c8fa622b10a97feab6feab88eddc10fbaf7/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6174746163686d656e74732f3936333039303839353232383530363231322f3937383031333734373234313136383931362f66696e62736d616c6c65722e706e67",
+                imageURL: "https://via.placeholder.com/600x300",
                 boxes: [],
             },
             computed: {

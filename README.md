@@ -1,1 +1,1 @@
-paska ei ees toimi vittu
+makes osu bbcode imagemaps 🔥🔥
