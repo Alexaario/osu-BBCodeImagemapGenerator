@@ -198,7 +198,7 @@
                 selectedID: '',
                 BBCode: '',
                 ballsText: 'Copy BBCode',
-                imageURL: "https://via.placeholder.com/800x600",
+                imageURL: "https://i.ibb.co/tTH8hTL0/Untitggged.png",
                 boxes: [],
             },
             computed: {
@@ -290,7 +290,7 @@
                 createNewBox() {
                     vm.boxes.push(
                         {
-                            id: vm.boxes.length + 1,
+                            id: Math.floor(Math.random() * 10000000000000),
                             x: 0,
                             y: 0,
                             sizeX: 0,
